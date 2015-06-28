@@ -2,6 +2,9 @@ MojoX-Renderer-Handlebars
 
 Mojolicious Renderer for Text::Handlebars, see modules for documentation.
 
+This module allows you to add a Text::Handlebars renderer handler to your
+Mojolicious application.
+
 INSTALLATION
 
 To install this module, run the following commands:
