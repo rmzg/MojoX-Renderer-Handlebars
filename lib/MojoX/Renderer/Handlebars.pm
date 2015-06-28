@@ -1,65 +1,143 @@
 package MojoX::Renderer::Handlebars;
 
-use 5.006;
 use strict;
 use warnings;
 
+use File::Spec ();
+use Mojo::Base -base;
+use Mojo::Loader qw(data_section);
+use Text::Handlebars ();
+
+our $VERSION = '0.03';
+
+
+has 'handlebars';
+
+sub build {
+    my $self = shift->SUPER::new(@_);
+    $self->_init(@_);
+    return sub { $self->_render(@_) };
+}
+
+sub _init {
+    my ($self, %args) = @_;
+
+    my $app = $args{mojo} || $args{app};
+    my $cache_dir;
+    my @path = $app->home->rel_dir('templates');
+
+    if ($app) {
+        $cache_dir = $app->home->rel_dir('tmp/compiled_templates');
+        push @path, data_section(
+            $app->renderer->classes->[0],
+        );
+    }
+    else {
+        $cache_dir = File::Spec->tmpdir;
+    }
+
+    my %config = (
+        cache_dir    => $cache_dir,
+        path         => \@path,
+        warn_handler => sub { },
+        die_handler  => sub { },
+        %{$args{template_options} || {}},
+    );
+
+    $self->handlebars(Text::Handlebars->new(\%config));
+
+    return $self;
+}
+
+sub _render {
+    my ($self, $renderer, $c, $output, $options) = @_;
+
+    my $name = $c->stash->{'template_name'}
+        || $renderer->template_name($options);
+    my %params = (%{$c->stash}, c => $c);
+
+    local $@;
+    if (defined(my $inline = $options->{inline})) {
+        $$output = $self->handlebars->render_string($inline, \%params);
+    }
+    else {
+        $$output = $self->handlebars->render($name, \%params);
+    }
+    die $@ if $@;
+
+    return 1;
+}
+
+1;
+
+
+__END__
 =head1 NAME
 
-MojoX::Renderer::Handlebars - The great new MojoX::Renderer::Handlebars!
-
-=head1 VERSION
-
-Version 0.01
-
-=cut
-
-our $VERSION = '0.01';
-
+MojoX::Renderer::Handlebars - Text::Handlebars renderer for Mojo
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
+    sub startup {
+        ....
 
-Perhaps a little code snippet.
+        # Via mojolicious plugin
+        $self->plugin('handlebars_renderer');
 
-    use MojoX::Renderer::Handlebars;
+        # or manually
+        use MojoX::Renderer::Handlebars;
+        my $handlebars = MojoX::Renderer::Handlebars->build(
+            mojo             => $self,
+            template_options => { },
+        );
+        $self->renderer->add_handler(hbs => $handlebars);
+    }
 
-    my $foo = MojoX::Renderer::Handlebars->new();
-    ...
+=head1 DESCRIPTION
 
-=head1 EXPORT
+The C<MojoX::Renderer::Handlebars> module is called by C<MojoX::Renderer> for
+any matching template.
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+=head1 METHODS
 
-=head1 SUBROUTINES/METHODS
+=head2 build
 
-=head2 function1
+    $renderer = MojoX::Renderer::Handlebars->build(...)
 
-=cut
+This method returns a handler for the Mojo renderer.
 
-sub function1 {
-}
+Supported parameters are:
 
-=head2 function2
+=over
 
-=cut
+=item mojo
 
-sub function2 {
-}
+C<build> currently uses a C<mojo> parameter pointing to the base class
+object (C<Mojo>).
+
+=item template_options
+
+A hash reference of options that are passed to Text::Handlebars->new().
+
+=back
+
+=head1 SEE ALSO
+
+L<Text::Handlebars>, L<MojoX::Renderer>, L<MojoX::Renderer::Xslate>
 
 =head1 AUTHOR
 
 Robert Grimes, C<< <rmzgrimes at gmail.com> >>
+
+This code is heavily based on the module L<MojoX::Renderer::Xslate> by "gray <gray at cpan.org>"
+since the Text::Handlebars module inherits from Text::Xslate. All bugs are mine.
+
 
 =head1 BUGS
 
 Please report any bugs or feature requests to C<bug-mojox-renderer-handlebars at rt.cpan.org>, or through
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=MojoX-Renderer-Handlebars>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
-
-
 
 
 =head1 SUPPORT
@@ -137,5 +215,3 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 =cut
-
-1; # End of MojoX::Renderer::Handlebars
