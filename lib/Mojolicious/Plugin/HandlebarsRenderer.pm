@@ -28,17 +28,17 @@ Mojolicious::Plugin::Handlebars - Text::Handlebars plugin
 
 =head1 SYNOPSIS
 
-# Mojolicious
-$self->plugin('handlebars_renderer');
-$self->plugin(handlebarse_renderer => {
-		template_options => { helpers => { add => sub { my($context,$arg1,$arg2) = @_; return $arg1 + $arg2 } } }
-		});
+	# Mojolicious
+	$self->plugin('handlebars_renderer');
+	$self->plugin(handlebarse_renderer => {
+			template_options => { helpers => { add => sub { my($context,$arg1,$arg2) = @_; return $arg1 + $arg2 } } }
+			});
 
-# Mojolicious::Lite
-plugin 'handlebars_renderer';
-plugin handlebars_renderer => {
-	template_options => { helpers => { add => sub { my($context,$arg1,$arg2) = @_; return $arg1 + $arg2 } } }
-};
+	# Mojolicious::Lite
+	plugin 'handlebars_renderer';
+	plugin handlebars_renderer => {
+		template_options => { helpers => { add => sub { my($context,$arg1,$arg2) = @_; return $arg1 + $arg2 } } }
+	};
 
 =head1 DESCRIPTION
 

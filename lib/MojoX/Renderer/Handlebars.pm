@@ -14,58 +14,56 @@ our $VERSION = '0.03';
 has 'handlebars';
 
 sub build {
-    my $self = shift->SUPER::new(@_);
-    $self->_init(@_);
-    return sub { $self->_render(@_) };
+	my $self = shift->SUPER::new(@_);
+	$self->_init(@_);
+	return sub { $self->_render(@_) };
 }
 
 sub _init {
-    my ($self, %args) = @_;
+	my ($self, %args) = @_;
 
-    my $app = $args{mojo} || $args{app};
-    my $cache_dir;
-    my @path = $app->home->rel_dir('templates');
+	my $app = $args{mojo} || $args{app};
+	my $cache_dir;
+	my @path = $app->home->rel_dir('templates');
 
-    if ($app) {
-        $cache_dir = $app->home->rel_dir('tmp/compiled_templates');
-        push @path, data_section(
-            $app->renderer->classes->[0],
-        );
-    }
-    else {
-        $cache_dir = File::Spec->tmpdir;
-    }
+	if ($app) {
+		$cache_dir = $app->home->rel_dir('tmp/compiled_templates');
+		push @path, data_section( $app->renderer->classes->[0] );
+	}
+	else {
+		$cache_dir = File::Spec->tmpdir;
+	}
 
-    my %config = (
-        cache_dir    => $cache_dir,
-        path         => \@path,
-        warn_handler => sub { },
-        die_handler  => sub { },
-        %{$args{template_options} || {}},
-    );
+	my %config = (
+			cache_dir    => $cache_dir,
+			path         => \@path,
+			warn_handler => sub { },
+			die_handler  => sub { },
+			%{$args{template_options} || {}},
+			);
 
-    $self->handlebars(Text::Handlebars->new(\%config));
+	$self->handlebars(Text::Handlebars->new(\%config));
 
-    return $self;
+	return $self;
 }
 
 sub _render {
-    my ($self, $renderer, $c, $output, $options) = @_;
+	my ($self, $renderer, $c, $output, $options) = @_;
 
-    my $name = $c->stash->{'template_name'}
-        || $renderer->template_name($options);
-    my %params = (%{$c->stash}, c => $c);
+	my $name = $c->stash->{'template_name'}
+	|| $renderer->template_name($options);
+	my %params = (%{$c->stash}, c => $c);
 
-    local $@;
-    if (defined(my $inline = $options->{inline})) {
-        $$output = $self->handlebars->render_string($inline, \%params);
-    }
-    else {
-        $$output = $self->handlebars->render($name, \%params);
-    }
-    die $@ if $@;
+	local $@;
+	if (defined(my $inline = $options->{inline})) {
+		$$output = $self->handlebars->render_string($inline, \%params);
+	}
+	else {
+		$$output = $self->handlebars->render($name, \%params);
+	}
+	die $@ if $@;
 
-    return 1;
+	return 1;
 }
 
 1;
@@ -78,31 +76,31 @@ MojoX::Renderer::Handlebars - Text::Handlebars renderer for Mojo
 
 =head1 SYNOPSIS
 
-    sub startup {
-        ....
+	sub startup {
+		....
 
-        # Via mojolicious plugin
-        $self->plugin('handlebars_renderer');
+	# Via mojolicious plugin
+			$self->plugin('handlebars_renderer');
 
-        # or manually
-        use MojoX::Renderer::Handlebars;
-        my $handlebars = MojoX::Renderer::Handlebars->build(
-            mojo             => $self,
-            template_options => { },
-        );
-        $self->renderer->add_handler(hbs => $handlebars);
-    }
+	# or manually
+		use MojoX::Renderer::Handlebars;
+		my $handlebars = MojoX::Renderer::Handlebars->build(
+				mojo             => $self,
+				template_options => { },
+				);
+		$self->renderer->add_handler(hbs => $handlebars);
+	}
 
 =head1 DESCRIPTION
 
-The C<MojoX::Renderer::Handlebars> module is called by C<MojoX::Renderer> for
+The C<MojoX::Renderer::Handlebars> module is called by C<Mojo::Renderer> for
 any matching template.
 
 =head1 METHODS
 
 =head2 build
 
-    $renderer = MojoX::Renderer::Handlebars->build(...)
+$renderer = MojoX::Renderer::Handlebars->build(...)
 
 This method returns a handler for the Mojo renderer.
 
@@ -144,7 +142,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc MojoX::Renderer::Handlebars
+perldoc MojoX::Renderer::Handlebars
 
 
 You can also look for information at:
@@ -200,7 +198,7 @@ patent license to make, have made, use, offer to sell, sell, import and
 otherwise transfer the Package with respect to any patent claims
 licensable by the Copyright Holder that are necessarily infringed by the
 Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
+		counterclaim) against any party alleging that the Package constitutes
 direct or contributory patent infringement, then this Artistic License
 to you shall terminate on the date that such litigation is filed.
 

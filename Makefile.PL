@@ -19,7 +19,7 @@ WriteMakefile(
     },
     PREREQ_PM => {
 				'Text::Handlebars' => 0.04,
-				'Mojolicious'      => 0.01
+				'Mojolicious'      => 5.81,
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'MojoX-Renderer-Handlebars-*' },
